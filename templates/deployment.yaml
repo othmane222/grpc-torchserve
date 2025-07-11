@@ -1,0 +1,71 @@
+# torchserve-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "torchserve-chart.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "torchserve-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "torchserve-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "torchserve-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: [
+            "torchserve",
+            "--start",
+            "--ts-config", "/home/model-server/config.properties",
+            "--model-store", "{{ .Values.torchserve.modelStorePath }}",
+            "--models", "{{ .Values.torchserve.modelsToLoad }}"
+        ]
+        ports:
+        - name: grpc-infer
+          containerPort: {{ .Values.torchserve.ports.grpcInference }}
+        - name: grpc-mgmt
+          containerPort: {{ .Values.torchserve.ports.grpcManagement }}
+        - name: http-infer
+          containerPort: {{ .Values.torchserve.ports.httpInference }}
+        - name: http-mgmt
+          containerPort: {{ .Values.torchserve.ports.httpManagement }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/model-server/config.properties
+          subPath: config.properties
+        {{- if .Values.persistentVolume.enabled }}
+        - name: model-store-volume
+          mountPath: {{ .Values.torchserve.modelStorePath }}
+        {{- end }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ include "torchserve-chart.fullname" . }}-config
+      {{- if .Values.persistentVolume.enabled }}
+      - name: model-store-volume
+        persistentVolumeClaim:
+          claimName: {{ include "torchserve-chart.fullname" . }}-pvc
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

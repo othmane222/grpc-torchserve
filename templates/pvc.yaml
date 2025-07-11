@@ -1,0 +1,19 @@
+# torchserve-chart/templates/pvc.yaml
+{{- if .Values.persistentVolume.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "torchserve-chart.fullname" . }}-pvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "torchserve-chart.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- toYaml .Values.persistentVolume.accessModes | nindent 4 }}
+  {{- if .Values.persistentVolume.storageClassName }}
+  storageClassName: {{ .Values.persistentVolume.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistentVolume.size }}
+{{- end }}

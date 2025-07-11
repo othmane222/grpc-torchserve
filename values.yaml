@@ -1,0 +1,66 @@
+# torchserve-chart/values.yaml
+
+# Number of TorchServe pods to run
+replicaCount: 1
+
+image:
+  repository: othmanemaarad442/torchserve
+  # For GPU support, change tag to "latest-gpu" and configure node selectors/tolerations
+  tag: "0.11.0-cpu"
+  pullPolicy: IfNotPresent
+
+# Name overrides for the deployed resources
+nameOverride: ""
+fullnameOverride: ""
+
+# Configuration for the TorchServe application itself
+torchserve:
+  # The path inside the container where models are stored.
+  # This should match the volumeMount path.
+  modelStorePath: "/home/shared/model-store"
+
+  # The models to load at startup. "all" loads all models in the model store.
+  # You can specify a single model like "my_model.mar".
+  modelsToLoad: "all"
+
+  # Port configuration
+  ports:
+    httpInference: 8080
+    httpManagement: 8081
+    grpcInference: 7070
+    grpcManagement: 7071
+
+# Configuration for the Kubernetes Service
+service:
+  type: NodePort # Other options: ClusterIP, LoadBalancer
+  ports:
+    grpcInference: 7070
+    grpcManagement: 7071
+    # You can also expose the HTTP ports if needed
+    # httpInference: 8080
+    # httpManagement: 8081
+    grpc_enable_ssl_management: false # Ensure plaintext matches
+    grpc_enable_ssl_inference: false
+
+# Configuration for the Persistent Volume Claim (PVC) to store models
+persistentVolume:
+  enabled: true
+  # If you have a specific StorageClass you want to use, specify it here
+  # storageClassName: "your-storage-class"
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+# Additional resource requests and limits for the container
+resources: {}
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+
+# For GPU workloads, you would uncomment and configure these
+# nodeSelector: {}
+# tolerations: []
+# affinity: {}

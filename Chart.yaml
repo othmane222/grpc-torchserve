@@ -1,0 +1,7 @@
+# torchserve-chart/Chart.yaml
+apiVersion: v2
+name: torchserve-chart
+description: A Helm chart for deploying TorchServe on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "latest-cpu" # The version of TorchServe being deployed

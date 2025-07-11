@@ -1,0 +1,30 @@
+# torchserve-chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "torchserve-chart.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "torchserve-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "torchserve-chart.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: grpc-inference
+    protocol: TCP
+    port: {{ .Values.service.ports.grpcInference }}
+    targetPort: grpc-infer
+  - name: grpc-management
+    protocol: TCP
+    port: {{ .Values.service.ports.grpcManagement }}
+    targetPort: grpc-mgmt
+  # Uncomment if you want to expose HTTP ports through the service
+  # - name: http-inference
+  #   protocol: TCP
+  #   port: {{ .Values.service.ports.httpInference }}
+  #   targetPort: http-infer
+  # - name: http-management
+  #   protocol: TCP
+  #   port: {{ .Values.service.ports.httpManagement }}
+  #   targetPort: http-mgmt

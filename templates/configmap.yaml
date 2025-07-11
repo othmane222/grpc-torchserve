@@ -1,0 +1,17 @@
+# torchserve-chart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "torchserve-chart.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "torchserve-chart.labels" . | nindent 4 }}
+data:
+  config.properties: |
+    inference_address=http://0.0.0.0:{{ .Values.torchserve.ports.httpInference }}
+    management_address=http://0.0.0.0:{{ .Values.torchserve.ports.httpManagement }}
+    grpc_inference_address=0.0.0.0
+    grpc_management_address=0.0.0.0
+    grpc_inference_port={{ .Values.torchserve.ports.grpcInference }}
+    grpc_management_port={{ .Values.torchserve.ports.grpcManagement }}
+    model_store={{ .Values.torchserve.modelStorePath }}
